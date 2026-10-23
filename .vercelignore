@@ -1,0 +1,4 @@
+.env
+.env.*
+dev-server.js
+limpar-teste.js

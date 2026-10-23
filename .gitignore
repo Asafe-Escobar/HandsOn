@@ -1,0 +1,6 @@
+.env
+.env.*
+
+# Testes locais
+dev-server.js
+limpar-teste.js
