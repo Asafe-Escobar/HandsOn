@@ -44,19 +44,14 @@ module.exports = async (req, res) => {
   const nome = txt(b.nome, 120);
   const email = txt(b.email, 160).toLowerCase();
   const tel = telefone(b.whatsapp);
-  const medico = b.perfil === "medico";
-  const UFS = "AC AL AP AM BA CE DF ES GO MA MT MS MG PA PB PR PE PI RJ RN RS RO RR SC SP SE TO".split(" ");
-  const perfilOk = medico
-    ? /^\d{4,7}$/.test(txt(b.crm, 10)) && UFS.includes(txt(b.crm_uf, 2))
-    : b.perfil === "aluno" && /^(1[0-2]|[1-9])º período$/.test(txt(b.periodo, 20));  // estudante de qualquer período
-  if (nome.split(/\s+/).length < 2 || !/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email) || !tel || !perfilOk) {
+  if (nome.split(/\s+/).length < 2 || !/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email) || !tel) {
     return res.status(400).json({ ok: false, erro: "dados inválidos" });
   }
 
   const curso = txt(b.curso, 120) || "HandsON Medsafe";
   const utm = ["utm_source", "utm_medium", "utm_campaign", "utm_content", "utm_term"].map(k => txt(b[k], 100) && `${k.slice(4)}=${txt(b[k], 100)}`).filter(Boolean).join(", ");
   const observacao = [
-    `[Landing HandsON] ${medico ? `Médico(a), CRM ${txt(b.crm, 10)}/${txt(b.crm_uf, 2)}` : `Estudante, ${txt(b.periodo, 20)}`}`,
+    "[Landing HandsON] Cadastro",
     `E-mail: ${email}`,
     utm && `Campanha: ${utm}`,
   ].filter(Boolean).join(" | ");

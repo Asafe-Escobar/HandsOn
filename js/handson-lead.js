@@ -5,11 +5,7 @@
   // Endpoint serverless (api/lead.js) que grava o lead no CRM. A chave do Supabase fica só no servidor.
   const CRM_ENDPOINT = "/api/lead";
   const CURSO = "HandsON Medsafe — 14 de novembro";
-  const CHECKOUT = "https://ensino.medsafebrasil.com.br/comprar/C99EFL4";
-  const CHAVE_CADASTRO = "handson-cadastrado";
 
-  const UFS = ["AC","AL","AP","AM","BA","CE","DF","ES","GO","MA","MT","MS","MG","PA","PB","PR","PE","PI","RJ","RN","RS","RO","RR","SC","SP","SE","TO"];
-  const PERIODOS = Array.from({ length: 12 }, (_, i) => `${i + 1}º período`);
 
   // Paleta da landing: azul-noite #060D16/#0B1724, turquesa #16B7B1, bordas #1E3248, fonte Archivo
   const css = `
@@ -53,37 +49,27 @@
       <button class="hl-close" type="button" aria-label="Fechar">×</button>
       <p class="hl-logo" role="img" aria-label="HandsON">Hands<span>ON</span></p>
       <div class="hl-step-form">
-        <h2 id="hl-title"><strong>Preencha seus dados</strong><br>para garantir a sua vaga</h2>
+        <h2 id="hl-title"><strong>Preencha seus dados</strong><br>para fazer seu cadastro</h2>
         <form class="hl-form" novalidate>
-          <div class="hl-profile" role="radiogroup" aria-label="Você é">
-            <label><input type="radio" name="perfil" value="medico" checked><span>Sou médico(a)</span></label>
-            <label><input type="radio" name="perfil" value="aluno"><span>Sou estudante de medicina</span></label>
-          </div>
           <input name="empresa" type="text" tabindex="-1" autocomplete="off" aria-hidden="true" style="position:absolute;left:-9999px;width:1px;height:1px;opacity:0">
           <input class="hl-input" name="nome" type="text" placeholder="Nome completo" autocomplete="name" required>
           <input class="hl-input" name="email" type="email" placeholder="E-mail" autocomplete="email" required>
           <input class="hl-input" name="whatsapp" type="tel" placeholder="(DDD) WhatsApp" autocomplete="tel" inputmode="numeric" maxlength="19" required>
-          <div class="hl-row hl-only-medico">
-            <input class="hl-input" name="crm" type="text" placeholder="Número do CRM" inputmode="numeric" maxlength="7">
-            <select class="hl-input" name="crm_uf" aria-label="UF do CRM"><option value="">UF</option>${UFS.map(u => `<option>${u}</option>`).join("")}</select>
           </div>
-          <select class="hl-input hl-only-aluno" name="periodo" aria-label="Período" hidden>
-            <option value="">Em qual período você está?</option>${PERIODOS.map(p => `<option>${p}</option>`).join("")}
-          </select>
           <p class="hl-error" role="alert" hidden></p>
-          <button class="hl-submit" type="submit">Continuar para o pagamento</button>
+          <button class="hl-submit" type="submit">Concluir cadastro</button>
         </form>
       </div>
       <div class="hl-done" hidden>
         <div class="hl-check" aria-hidden="true">✓</div>
         <h2><strong>Cadastro feito!</strong></h2>
-        <p>Obrigado, <strong class="hl-done-name"></strong>. Estamos levando você para o pagamento seguro para garantir a sua vaga no HandsON.</p>
-        <a class="hl-submit hl-done-close hl-go" href="#">Ir para o pagamento</a>
+        <p>Obrigado, <strong class="hl-done-name"></strong>. Estamos levando você para o pagamento seguro para fazer seu cadastro no HandsON.</p>
+        <button class="hl-submit hl-done-close" type="button">Fechar</button>
       </div>
     </div>
   </div>`;
 
-  let overlay, form, err, submit, lastFocus = null, destino = CHECKOUT;
+  let overlay, form, err, submit, lastFocus = null;
 
   const montar = () => {
     if (overlay && document.body.contains(overlay)) return;
@@ -99,10 +85,9 @@
     submit = form.querySelector(".hl-submit");
 
     overlay.querySelector(".hl-close").addEventListener("click", close);
+    overlay.querySelector(".hl-done-close").addEventListener("click", close);
     overlay.addEventListener("click", (e) => { if (e.target === overlay) close(); });
 
-    form.querySelectorAll('input[name="perfil"]').forEach(r => r.addEventListener("change", () => { sync(); err.hidden = true; }));
-    sync();
 
     // Máscaras simples
     form.whatsapp.addEventListener("input", () => {
@@ -111,7 +96,6 @@
       d = d.slice(0, 11);
       form.whatsapp.value = d.length > 6 ? `(${d.slice(0, 2)}) ${d.slice(2, d.length - 4)}-${d.slice(-4)}` : d.length > 2 ? `(${d.slice(0, 2)}) ${d.slice(2)}` : d;
     });
-    form.crm.addEventListener("input", () => { form.crm.value = form.crm.value.replace(/\D/g, "").slice(0, 7); });
     form.addEventListener("submit", enviar);
   };
 
@@ -127,20 +111,10 @@
   };
   const close = () => { overlay.hidden = true; document.documentElement.classList.remove("hl-lock"); if (lastFocus) lastFocus.focus(); };
 
-  // Checkout com as UTMs da landing, para a venda manter a origem da campanha
-  const comUtm = (url) => {
-    const u = new URL(url), q = new URLSearchParams(location.search);
-    ["utm_source", "utm_medium", "utm_campaign", "utm_content", "utm_term"].forEach(k => { if (q.get(k) && !u.searchParams.has(k)) u.searchParams.set(k, q.get(k)); });
-    return u.toString();
-  };
-  const jaCadastrado = () => { try { return sessionStorage.getItem(CHAVE_CADASTRO) === "1"; } catch (x) { return false; } };
-
-  // Todos os botões de compra passam pelo cadastro antes do checkout
+  // Abre o cadastro nos bot?es de inscri??o.
   document.addEventListener("click", (e) => {
     const a = e.target.closest && e.target.closest("a");
-    if (!a || (overlay && overlay.contains(a)) || !/ensino\.medsafebrasil\.com\.br\/(comprar|matricula)/.test(a.getAttribute("href") || "")) return;
-    destino = a.href;
-    if (jaCadastrado()) { e.preventDefault(); location.href = comUtm(destino); return; }  // já se cadastrou nesta visita
+    if (!a || (overlay && overlay.contains(a)) || a.getAttribute("href") !== "#cadastro") return;
     open(e);
   }, true);
   document.addEventListener("keydown", (e) => {
@@ -154,23 +128,12 @@
     else if (!e.shiftKey && document.activeElement === ultimo) { e.preventDefault(); primeiro.focus(); }
   });
 
-  // Alterna campos de médico / estudante
-  const sync = () => {
-    const aluno = form.perfil.value === "aluno";
-    overlay.querySelectorAll(".hl-only-medico").forEach(el => el.hidden = aluno);
-    overlay.querySelectorAll(".hl-only-aluno").forEach(el => el.hidden = !aluno);
-  };
-
   const fail = (msg, field) => { err.textContent = msg; err.hidden = false; if (field) field.focus(); return false; };
   const validate = () => {
     if (form.nome.value.trim().split(/\s+/).length < 2) return fail("Informe seu nome completo.", form.nome);
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(form.email.value.trim())) return fail("Informe um e-mail válido.", form.email);
     const tel = form.whatsapp.value.replace(/\D/g, "");
     if (tel.length < 10 || tel.length > 11) return fail("Informe o WhatsApp com DDD.", form.whatsapp);
-    if (form.perfil.value === "medico") {
-      if (form.crm.value.length < 4) return fail("Informe o número do seu CRM.", form.crm);
-      if (!form.crm_uf.value) return fail("Selecione a UF do seu CRM.", form.crm_uf);
-    } else if (!form.periodo.value) return fail("Selecione o seu período.", form.periodo);
     err.hidden = true; return true;
   };
 
@@ -188,15 +151,10 @@
   async function enviar(e) {
     e.preventDefault();
     if (!validate()) return;
-    const medico = form.perfil.value === "medico";
     const lead = {
-      perfil: medico ? "medico" : "aluno",
       nome: form.nome.value.trim(),
       email: form.email.value.trim().toLowerCase(),
       whatsapp: "+55" + form.whatsapp.value.replace(/\D/g, ""),
-      crm: medico ? form.crm.value : "",
-      crm_uf: medico ? form.crm_uf.value : "",
-      periodo: medico ? "" : form.periodo.value,
       curso: CURSO,
       pagina: location.href,
       enviado_em: new Date().toISOString(),
@@ -206,24 +164,19 @@
     submit.disabled = true; submit.textContent = "Enviando...";
     try {
       await send(lead);
-      try { sessionStorage.setItem(CHAVE_CADASTRO, "1"); } catch (x) {}
-      const url = comUtm(destino);
-      const ir = overlay.querySelector(".hl-go");
-      ir.href = url;
       overlay.querySelector(".hl-done-name").textContent = lead.nome.split(" ")[0];
       overlay.querySelector(".hl-step-form").hidden = true;
       overlay.querySelector(".hl-done").hidden = false;
-      ir.focus();
-      form.reset(); sync();
+      overlay.querySelector(".hl-done-close").focus();
+      form.reset();
       if (window.fbq) window.fbq("track", "Lead");
-      if (window.dataLayer) window.dataLayer.push({ event: "lead_handson", perfil: lead.perfil });
-      setTimeout(() => { location.href = url; }, 1200);
+      if (window.dataLayer) window.dataLayer.push({ event: "lead_handson" });
     } catch (x) {
       console.error("Falha ao enviar lead:", x);
       // sem cadastro gravado não há checkout: a pessoa tenta de novo ou fala com a equipe
       fail("Não foi possível concluir o cadastro agora. Tente novamente ou fale com a equipe pelo WhatsApp.");
     } finally {
-      submit.disabled = false; submit.textContent = "Continuar para o pagamento";
+      submit.disabled = false; submit.textContent = "Concluir cadastro";
     }
   }
 })();
