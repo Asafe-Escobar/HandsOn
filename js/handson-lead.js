@@ -49,7 +49,8 @@
       <button class="hl-close" type="button" aria-label="Fechar">×</button>
       <p class="hl-logo" role="img" aria-label="HandsON">Hands<span>ON</span></p>
       <div class="hl-step-form">
-        <h2 id="hl-title"><strong>Preencha seus dados</strong><br>para fazer seu cadastro</h2>
+        <h2 id="hl-title"><strong>Receba uma oferta especial</strong><br>Cadastre-se para conhecer as condi??es</h2>
+        <p style="margin:0 0 20px;color:#D4E0EA;font-size:15px;line-height:1.5">? estudante de medicina? <strong style="color:#16B7B1">Temos condi??es especiais para voc?.</strong></p>
         <form class="hl-form" novalidate>
           <input name="empresa" type="text" tabindex="-1" autocomplete="off" aria-hidden="true" style="position:absolute;left:-9999px;width:1px;height:1px;opacity:0">
           <input class="hl-input" name="nome" type="text" placeholder="Nome completo" autocomplete="name" required>
