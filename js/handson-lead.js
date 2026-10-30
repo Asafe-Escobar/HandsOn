@@ -5,6 +5,8 @@
   // Endpoint serverless (api/lead.js) que grava o lead no CRM. A chave do Supabase fica só no servidor.
   const CRM_ENDPOINT = "/api/lead";
   const CURSO = "HandsON Medsafe — 14 de novembro";
+  // Link de pagamento (oferta Black Friday). Depois do cadastro, a pessoa segue para cá.
+  const CHECKOUT_URL = "https://linha.medsafebrasil.com.br/comprar/C99EFL4";
 
 
   // Paleta da landing: azul-noite #060D16/#0B1724, turquesa #16B7B1, bordas #1E3248, fonte Archivo
@@ -64,8 +66,8 @@
       <div class="hl-done" hidden>
         <div class="hl-check" aria-hidden="true">✓</div>
         <h2><strong>Cadastro feito!</strong></h2>
-        <p>Obrigado, <strong class="hl-done-name"></strong>. Estamos levando você para o pagamento seguro para fazer seu cadastro no HandsON.</p>
-        <button class="hl-submit hl-done-close" type="button">Fechar</button>
+        <p>Obrigado, <strong class="hl-done-name"></strong>. Estamos levando você para o pagamento seguro com a condição de Black Friday do HandsON...</p>
+        <a class="hl-submit hl-done-go" href="${CHECKOUT_URL}">Ir para o pagamento</a>
       </div>
     </div>
   </div>`;
@@ -86,7 +88,6 @@
     submit = form.querySelector(".hl-submit");
 
     overlay.querySelector(".hl-close").addEventListener("click", close);
-    overlay.querySelector(".hl-done-close").addEventListener("click", close);
     overlay.addEventListener("click", (e) => { if (e.target === overlay) close(); });
 
 
@@ -168,10 +169,15 @@
       overlay.querySelector(".hl-done-name").textContent = lead.nome.split(" ")[0];
       overlay.querySelector(".hl-step-form").hidden = true;
       overlay.querySelector(".hl-done").hidden = false;
-      overlay.querySelector(".hl-done-close").focus();
+      overlay.querySelector(".hl-done-go").focus();
       form.reset();
-      if (window.fbq) window.fbq("track", "Lead");
+      if (window.fbq) {
+        window.fbq("track", "Lead");
+        window.fbq("track", "InitiateCheckout", { currency: "BRL" });
+      }
       if (window.dataLayer) window.dataLayer.push({ event: "lead_handson" });
+      // Dá tempo do pixel sair antes de trocar de página
+      setTimeout(() => { location.href = CHECKOUT_URL; }, 1500);
     } catch (x) {
       console.error("Falha ao enviar lead:", x);
       // sem cadastro gravado não há checkout: a pessoa tenta de novo ou fala com a equipe

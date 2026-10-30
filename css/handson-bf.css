@@ -1,0 +1,31 @@
+/* Card de preço da Black Friday (seção de inscrição) */
+.hs-bf{position:relative;width:100%;box-sizing:border-box;margin:4px 0;padding:22px 18px 20px;border-radius:14px;background:radial-gradient(120% 90% at 50% 0%,#12263a 0%,#060D16 72%);box-shadow:0 14px 34px rgba(6,13,22,.3),inset 0 0 0 1px rgba(22,183,177,.4);color:#fff;text-align:center;overflow:hidden}
+.hs-bf p{margin:0}
+
+.hs-bf-tag{display:inline-block;position:relative;overflow:hidden;padding:6px 16px;border-radius:999px;background:#16B7B1;font-size:13px;font-weight:800;letter-spacing:3px;text-transform:uppercase;color:#060D16}
+.hs-bf-tag span{position:relative}
+.hs-bf-tag::after{content:"";position:absolute;top:0;bottom:0;left:-60%;width:40%;background:linear-gradient(100deg,transparent,rgba(255,255,255,.6),transparent);transform:skewX(-20deg);animation:hs-bf-sweep 3.6s ease-in-out infinite}
+@keyframes hs-bf-sweep{0%{left:-60%}40%,100%{left:130%}}
+
+.hs-bf-label{margin-top:12px !important;font-size:11px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,.6)}
+.hs-bf-de{margin-top:10px !important;font-size:14px;color:rgba(255,255,255,.65)}
+.hs-bf s{color:rgba(255,255,255,.55);text-decoration-color:#e5484d;text-decoration-thickness:2px}
+.hs-bf-de s{font-weight:600}
+
+.hs-bf-preco{display:flex;align-items:flex-start;justify-content:center;gap:6px;margin-top:10px;line-height:1}
+.hs-bf-x{align-self:center;font-size:15px;font-weight:700;line-height:1.05;text-align:right;text-transform:uppercase;color:rgba(255,255,255,.75)}
+.hs-bf-rs{margin-top:10px;font-size:20px;font-weight:700;color:#16B7B1}
+.hs-bf-int{font-size:80px;font-weight:800;letter-spacing:-3px;color:#fff;text-shadow:0 0 28px rgba(22,183,177,.45)}
+.hs-bf-cent{margin-top:8px;font-size:26px;font-weight:800;color:#fff}
+
+.hs-bf-juros{margin-top:4px !important;font-size:15px;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:#16B7B1}
+.hs-bf-vista{margin-top:14px !important;padding-top:12px;border-top:1px solid rgba(255,255,255,.12);font-size:14px;color:rgba(255,255,255,.75)}
+.hs-bf-vista b{color:#fff;font-weight:700}
+
+@media (max-width:767px){
+  .hs-bf{padding:20px 12px 18px}
+  .hs-bf-int{font-size:68px}
+}
+@media (prefers-reduced-motion:reduce){
+  .hs-bf-tag::after{animation:none}
+}
