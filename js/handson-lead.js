@@ -1,5 +1,5 @@
 // Formulário de cadastro (médico ou estudante de qualquer período) que abre nos botões de compra.
-// O cadastro é obrigatório: só depois de o lead ser gravado no CRM a pessoa segue para o checkout.
+// Depois do cadastro a pessoa segue para o checkout (mesmo se o CRM falhar).
 // A janela é montada no primeiro clique e o listener fica no document.
 (() => {
   // Endpoint serverless (api/lead.js) que grava o lead no CRM. A chave do Supabase fica só no servidor.
@@ -58,7 +58,6 @@
           <input class="hl-input" name="nome" type="text" placeholder="Nome completo" autocomplete="name" required>
           <input class="hl-input" name="email" type="email" placeholder="E-mail" autocomplete="email" required>
           <input class="hl-input" name="whatsapp" type="tel" placeholder="(DDD) WhatsApp" autocomplete="tel" inputmode="numeric" maxlength="19" required>
-          </div>
           <p class="hl-error" role="alert" hidden></p>
           <button class="hl-submit" type="submit">Concluir cadastro</button>
         </form>
@@ -145,9 +144,14 @@
     return o;
   };
 
+  // Tenta gravar no CRM por até 5s; o resultado não bloqueia o checkout
   const send = async (lead) => {
-    const r = await fetch(CRM_ENDPOINT, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(lead) });
-    if (!r.ok) throw new Error("HTTP " + r.status);
+    const ctrl = new AbortController();
+    const t = setTimeout(() => ctrl.abort(), 5000);
+    try {
+      const r = await fetch(CRM_ENDPOINT, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(lead), signal: ctrl.signal });
+      if (!r.ok) throw new Error("HTTP " + r.status);
+    } finally { clearTimeout(t); }
   };
 
   async function enviar(e) {
@@ -164,26 +168,20 @@
       ...utm(),
     };
     submit.disabled = true; submit.textContent = "Enviando...";
-    try {
-      await send(lead);
-      overlay.querySelector(".hl-done-name").textContent = lead.nome.split(" ")[0];
-      overlay.querySelector(".hl-step-form").hidden = true;
-      overlay.querySelector(".hl-done").hidden = false;
-      overlay.querySelector(".hl-done-go").focus();
-      form.reset();
-      if (window.fbq) {
-        window.fbq("track", "Lead");
-        window.fbq("track", "InitiateCheckout", { currency: "BRL" });
-      }
-      if (window.dataLayer) window.dataLayer.push({ event: "lead_handson" });
-      // Dá tempo do pixel sair antes de trocar de página
-      setTimeout(() => { location.href = CHECKOUT_URL; }, 1500);
-    } catch (x) {
-      console.error("Falha ao enviar lead:", x);
-      // sem cadastro gravado não há checkout: a pessoa tenta de novo ou fala com a equipe
-      fail("Não foi possível concluir o cadastro agora. Tente novamente ou fale com a equipe pelo WhatsApp.");
-    } finally {
-      submit.disabled = false; submit.textContent = "Concluir cadastro";
+    // Se o CRM falhar (no GitHub Pages /api/lead não existe), a pessoa segue para o pagamento mesmo assim
+    try { await send(lead); } catch (x) { console.error("Falha ao enviar lead:", x); }
+    overlay.querySelector(".hl-done-name").textContent = lead.nome.split(" ")[0];
+    overlay.querySelector(".hl-step-form").hidden = true;
+    overlay.querySelector(".hl-done").hidden = false;
+    overlay.querySelector(".hl-done-go").focus();
+    form.reset();
+    submit.disabled = false; submit.textContent = "Concluir cadastro";
+    if (window.fbq) {
+      window.fbq("track", "Lead");
+      window.fbq("track", "InitiateCheckout", { currency: "BRL" });
     }
+    if (window.dataLayer) window.dataLayer.push({ event: "lead_handson" });
+    // Dá tempo do pixel sair antes de trocar de página
+    setTimeout(() => { location.href = CHECKOUT_URL; }, 1500);
   }
 })();
