@@ -5,7 +5,7 @@
   // Endpoint serverless (api/lead.js) que grava o lead no CRM. A chave do Supabase fica só no servidor.
   const CRM_ENDPOINT = "/api/lead";
   const CURSO = "HandsON Medsafe — 14 de novembro";
-  // Link de pagamento (oferta Black Friday). Depois do cadastro, a pessoa segue para cá.
+  // Link de pagamento. Depois do cadastro, a pessoa segue para cá.
   const CHECKOUT_URL = "https://linha.medsafebrasil.com.br/comprar/C99EFL4";
 
 
@@ -65,7 +65,7 @@
       <div class="hl-done" hidden>
         <div class="hl-check" aria-hidden="true">✓</div>
         <h2><strong>Cadastro feito!</strong></h2>
-        <p>Obrigado, <strong class="hl-done-name"></strong>. Estamos levando você para o pagamento seguro com a condição de Black Friday do HandsON...</p>
+        <p>Obrigado, <strong class="hl-done-name"></strong>. Estamos levando você para o pagamento seguro para garantir sua vaga no HandsON...</p>
         <a class="hl-submit hl-done-go" href="${CHECKOUT_URL}">Ir para o pagamento</a>
       </div>
     </div>
